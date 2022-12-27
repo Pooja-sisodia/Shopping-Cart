@@ -15,6 +15,8 @@ exports.createUser = async (req, res) => {
         let data = req.body
         let files = req.files
 
+        if(files.length == 0) {return res.status(400).send({status:false, message:"provide profile image"})}
+
         let { fname, lname, email, profileImage, phone, password, address, ...rest } = data
 
         if (!isValidRequestBody(data)) return res.status(400).send({ status: false, message: "No data found from body! You need to put the Mandatory Fields (i.e. fname, lname, email, profileImage, phone, password & address). " });
@@ -35,7 +37,8 @@ exports.createUser = async (req, res) => {
 
         if (!isValid(email)) { return res.status(400).send({ status: false, message: 'Please enter the EmailId' }) }
         if (!isValidEmail(email)) { return res.status(400).send({ status: false, message: 'Please enter valid emailId' }) }
-
+        
+        // if(!isValid(profileImage)) { return res.status(400).send({ status: false, message: 'Please enter the profileImage' }) }
         if (!isValid(phone)) { return res.status(400).send({ status: false, message: 'Please enter the Mobile Number' }) }
         if (!isValidMobile(phone)) { return res.status(400).send({ status: false, message: 'Please enter valid Mobile Number' }) }
 
@@ -81,6 +84,7 @@ exports.createUser = async (req, res) => {
 
         //===================== Checking the File is present or not and Create S3 Link =====================//
         if (files && files.length > 0) {
+            
 
             if (files.length > 1) return res.status(400).send({ status: false, message: "You can't enter more than one file for Create!" })
             if (!isValidImage(files[0]['originalname'])) { return res.status(400).send({ status: false, message: "You have to put only Image." }) }
@@ -141,6 +145,10 @@ exports.getUserProfile = async function (req, res) {
 
         if (Object.keys(data1).length == 0) return res.status(400).send({ status: false, message: "please provide userId in url" })
 
+        let findUser = await userModel.findById(data1)
+
+        if (!findUser) return res.status(404).send({ status: false, message: "userId doesn't exist" })
+
 
         if (req.decodedToken.userId !== data1) {
             return res.status(403).send({
@@ -149,10 +157,6 @@ exports.getUserProfile = async function (req, res) {
                     "Unauthorised Access: You cannot access profile of other Users.",
             });
         }
-
-        let findUser = await userModel.findById(data1)
-
-        if (!findUser) return res.status(404).send({ status: false, message: "userId doesn't exist" })
 
         res.status(200).send({ status: true, message: "User profile details", data: findUser })
 
@@ -169,31 +173,31 @@ exports.updateUser = async function (req, res) {
 
         if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Invalid userId" })
 
-        
-        
+
+
         let userDb = await userModel.findById(userId)
-        
+
         if (!userDb) return res.status(404).send({ status: false, messgage: 'user not found' })
-        
+
         let files = req.files
         const body = req.body
-        
-        let { fname, lname, email, phone, password, address } = body
-        
-        let data = {} 
 
-        if (!isValidRequestBody(body))return res.status(400).send({ status: false, message: "please give some data" });
+        let { fname, lname, email, phone, password, address } = body
+
+        let data = {}
+
+        if (!isValidRequestBody(body)) return res.status(400).send({ status: false, message: "please give some data" });
 
         if (fname) {
             if (!isValidName(fname)) return res.status(406).send({ status: false, message: "Enter a valid fname" })
             data.fname = fname
         }
-    
+
         if (lname) {
             if (!isValidName(lname)) return res.status(406).send({ status: false, message: "Enter a valid lname" })
             data.lname = lname
         }
-        
+
         if (email) {
             if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "email must be in correct format for e.g. xyz@abc.com" })
             let uniqueEmail = await userModel.findOne({ email: email })
@@ -208,7 +212,7 @@ exports.updateUser = async function (req, res) {
             data.profileImage = ImageLink
         }
 
-        
+
         if (phone) {
             if (!isValidMobile(phone)) return res.status(400).send({ status: false, message: "invalid phone number" })
             let uniquePhone = await userModel.findOne({ phone: phone })
@@ -217,7 +221,7 @@ exports.updateUser = async function (req, res) {
         }
 
 
-        
+
         if (password) {
             if (!isValidPassword(password)) return res.status(406).send({
                 status: false, message: "passWord should be in between(8-15) & must be contain upperCase, lowerCase, specialCharecter & Number",
@@ -231,15 +235,15 @@ exports.updateUser = async function (req, res) {
             addressData = addressData.toObject()
             if (address.shipping) {
                 if (address.shipping.street) {
-                    if(!isValidStreet(address.shipping.street))
-                        return res.status(400).send({status:false, message:"enter valid street"})
-                
+                    if (!isValidStreet(address.shipping.street))
+                        return res.status(400).send({ status: false, message: "enter valid street" })
+
                     addressData.address.shipping.street = address.shipping.street
                 }
                 if (address.shipping.city) {
-                    if(!isValidCity(address.shipping.city))
-                        return res.status(400).send({status:false , message:"enter valid city"})
-                    
+                    if (!isValidCity(address.shipping.city))
+                        return res.status(400).send({ status: false, message: "enter valid city" })
+
                     addressData.address.shipping.city = address.shipping.city
                 }
 
@@ -253,16 +257,16 @@ exports.updateUser = async function (req, res) {
             if (address.billing) {
 
                 if (address.billing.street) {
-                    if(!isValidStreet(address.billing.street))
-                        return res.status(400).send({status:false, message:"enter valid street"})
-                
+                    if (!isValidStreet(address.billing.street))
+                        return res.status(400).send({ status: false, message: "enter valid street" })
+
                     addressData.address.billing.street = address.billing.street
                 }
                 if ((address.billing.city)) {
-                    if(!isValidCity(address.billing.city))
-                        return res.status(400).send({status:false , message:"enter valid city"})
+                    if (!isValidCity(address.billing.city))
+                        return res.status(400).send({ status: false, message: "enter valid city" })
 
-                    
+
                     addressData.address.billing.city = address.billing.city
                 }
 
@@ -275,7 +279,7 @@ exports.updateUser = async function (req, res) {
             data.address = addressData.address
         }
 
-        const user = await userModel.findByIdAndUpdate(userId , data, { new: true })
+        const user = await userModel.findByIdAndUpdate(userId, data, { new: true })
 
         if (!user) return res.status(404).send({ status: false, message: "User not found" })
 
