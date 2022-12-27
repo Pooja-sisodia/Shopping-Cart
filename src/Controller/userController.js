@@ -17,7 +17,6 @@ exports.createUser = async (req, res) => {
 
         let { fname, lname, email, profileImage, phone, password, address, ...rest } = data
 
-        //===================== Checking User Body Data =====================//
         if (!isValidRequestBody(data)) return res.status(400).send({ status: false, message: "No data found from body! You need to put the Mandatory Fields (i.e. fname, lname, email, profileImage, phone, password & address). " });
         if (isValidRequestBody(rest)) { return res.status(400).send({ status: false, message: "You can input only fname, lname, email, profileImage, phone, password & address." }) }
 
@@ -26,11 +25,8 @@ exports.createUser = async (req, res) => {
 
         if (!isValid(data.address)) return res.status(400).send({ status: false, message: "Address should be in object and must contain shipping and billing addresses" });
 
-        //===================== Destructuring Address from Object Data =================================//
-
         let { shipping, billing } = data.address
 
-        //===================== Validation of Data =====================//
         if (!isValid(fname)) { return res.status(400).send({ status: false, message: 'Please enter fname' }) }
         if (!isValidName(fname)) { return res.status(400).send({ status: false, message: 'fname should be in Alphabets' }) }
 
