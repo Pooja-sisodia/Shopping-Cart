@@ -144,13 +144,11 @@ exports.getProduct = async (req, res) => {
 
       let data = req.query
 
-      //===================== Destructuring User Body Data =====================//
       let { size, name, priceGreaterThan, priceLessThan, priceSort, ...rest } = data
 
-      //===================== Checking Mandotory Field =====================//
-      if (validator.checkInputsPresent(rest)) { return res.status(400).send({ status: false, message: "You can input only size, name, priceGreaterThan, priceLessThan, priceSort." }) }
+      if (isValidRequestBody(rest)) { return res.status(400).send({ status: false, message: "You can input only size, name, priceGreaterThan, priceLessThan, priceSort." }) }
 
-      if (!validator.checkInputsPresent(data)) {
+      if (!isValidRequestBody(data)) {
 
           let productData = await productModel.find({ isDeleted: false })
 
@@ -158,38 +156,37 @@ exports.getProduct = async (req, res) => {
 
           return res.status(200).send({ status: true, message: "Success", data: productData });
       }
-
-      //===================== Create a Object of Product =====================//
+    
       let obj = { isDeleted: false }
 
       //===================== Check Present data & Validate of Size =====================//
       if (size || size == '') {
-          if (!validator.isValidBody(size)) return res.status(400).send({ status: false, message: "Please enter Size!" });
+          if (!isValid(size)) return res.status(400).send({ status: false, message: "Please enter Size!" });
           size = size.split(',').map((item) => item.trim())
           for (let i = 0; i < size.length; i++) {
-              if (!validator.isValidateSize(size[i])) return res.status(400).send({ status: false, message: "Please mention valid Size!" });
+              if (!isValidateSize(size[i])) return res.status(400).send({ status: false, message: "Please mention valid Size!" });
           }
           obj.availableSizes = { $all: size }
       }
 
       //===================== Check Present data & Validate of Name =====================//
       if (name || name == '') {
-          if (!validator.isValidBody(name)) { return res.status(400).send({ status: false, message: "Please enter name!" }) }
-          if (!validator.isValidProdName(name)) { return res.status(400).send({ status: false, message: "Please mention valid name!" }) }
+          if (!isValid(name)) { return res.status(400).send({ status: false, message: "Please enter name!" }) }
+          if (!isValidName(name)) { return res.status(400).send({ status: false, message: "Please mention valid name!" }) }
           obj.title = { $regex: name }
       }
 
       //===================== Check Present data & Validate of priceGreaterThan =====================//
       if (priceGreaterThan || priceGreaterThan == '') {
-          if (!validator.isValidBody(priceGreaterThan)) return res.status(400).send({ status: false, message: "Please enter Price Greater Than!" });
-          if (!validator.isValidPrice(priceGreaterThan)) return res.status(400).send({ status: false, message: "priceGreaterThan must be number!" });
+          if (!isValid(priceGreaterThan)) return res.status(400).send({ status: false, message: "Please enter Price Greater Than!" });
+          if (!isValidPrice(priceGreaterThan)) return res.status(400).send({ status: false, message: "priceGreaterThan must be number!" });
           obj.price = { $gt: priceGreaterThan }
       }
 
       //===================== Check Present data & Validate of priceLessThan =====================//
       if (priceLessThan || priceLessThan == '') {
-          if (!validator.isValidBody(priceLessThan)) return res.status(400).send({ status: false, message: "Please enter Price Lesser Than!" });
-          if (!validator.isValidPrice(priceLessThan)) return res.status(400).send({ status: false, message: "priceLessThan must be number!" });
+          if (!isValid(priceLessThan)) return res.status(400).send({ status: false, message: "Please enter Price Lesser Than!" });
+          if (!isValidPrice(priceLessThan)) return res.status(400).send({ status: false, message: "priceLessThan must be number!" });
           obj.price = { $lt: priceLessThan }
       }
 
@@ -216,6 +213,8 @@ exports.getProduct = async (req, res) => {
       return res.status(500).send({ status: false, message: error.message })
   }
 }
+
+
 
 
 exports.updateProducts = async (req, res) => {
