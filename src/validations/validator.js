@@ -54,5 +54,9 @@ const isValidStreet = function (street) {
   return streets.test(street);
 };
 
+let isValidStatus = (status) => {
+  return ['pending', 'completed', 'cancelled'].includes(status);
+}
 
-module.exports={isValidStreet,isValidNum,isValidPrice,isValidateSize,isValidImage,isValidCity,isValidPin,isValid,isValidMobile,isValidEmail,isValidName,isValidObjectId,isValidPassword,isValidRequestBody}
+
+module.exports={isValidStreet,isValidStatus,isValidNum,isValidPrice,isValidateSize,isValidImage,isValidCity,isValidPin,isValid,isValidMobile,isValidEmail,isValidName,isValidObjectId,isValidPassword,isValidRequestBody}
