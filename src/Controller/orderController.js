@@ -28,7 +28,7 @@ exports.createOrder = async (req, res) => {
         if (!isValid(cartId)) {
             return res.status(400).send({ status: false, message: "Cart ID is missing" });
         }
-        if (!mongoose.isValidObjectId(cartId)) {
+        if (!isValidObjectId(cartId)) {
             return res.status(400).send({ status: false, message: "Please provide valid format of cart Id" });
         }
         //============================ checking if the cart exist from the userid ======================  
