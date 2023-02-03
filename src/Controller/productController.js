@@ -255,7 +255,7 @@ exports.updateProducts = async (req, res) => {
 
     if (files && files.length != 0) {
       let ImageLink = await uploadFile(files[0])
-      if (!urlreg.test(ImageLink)) return res.status(406).send({
+      if (!isValidImage(ImageLink)) return res.status(406).send({
         status: false, message: "image file should be in image format",
       })
       data.productImage = ImageLink
